@@ -161,8 +161,8 @@ uint8_t currentPatternIndex = 0;                                // 当前 patter
 #endif
 
 // 设置wifi接入信息(请根据您的WiFi信息进行修改)
-const char* ssid = "mi8-777";
-const char* password = "150909pqs";
+const char* ssid = "";
+const char* password = "";
 // MQTT服务器地址
 const char* mqttServer = "192.168.1.3";
 // Topic前缀
