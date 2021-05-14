@@ -18,11 +18,11 @@
 
 本项目烧写到esp32/8266后需要搭配mqtt使用：
 
-![1](img/1.png)
-![2](img/2.png)
-![3](img/3.png)
-![4](img/4.png)
-![5](img/5.png)
+![1](https://cdn.jsdelivr.net/gh/pengqiangsheng/esp8266_DazzleLed_ws2812/img/1.png)
+![2](https://cdn.jsdelivr.net/gh/pengqiangsheng/esp8266_DazzleLed_ws2812/img/2.png)
+![3](https://cdn.jsdelivr.net/gh/pengqiangsheng/esp8266_DazzleLed_ws2812/img/3.png)
+![4](https://cdn.jsdelivr.net/gh/pengqiangsheng/esp8266_DazzleLed_ws2812/img/4.png)
+![5](https://cdn.jsdelivr.net/gh/pengqiangsheng/esp8266_DazzleLed_ws2812/img/5.png)
 
 > 关于mqtt web客户端的内容，请移步[esp8266网站快速开发脚手架](https://github.com/pengqiangsheng/esp8266_web_generator)
 
