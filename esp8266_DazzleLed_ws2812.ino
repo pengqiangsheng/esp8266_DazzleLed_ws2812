@@ -151,10 +151,8 @@ uint8_t currentPatternIndex = 0;                                // 当前 patter
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <WebServer.h>
-#include <PubSubClient.h>
-#include <Ticker.h>
 #include "mqtt_web_client.h"
-
+#include <uri/UriRegex.h>
 // 定义板载Led灯的GPIO引脚
 #ifndef LED_BUILTIN
 #define LED_BUILTIN 2
@@ -163,27 +161,8 @@ uint8_t currentPatternIndex = 0;                                // 当前 patter
 // 设置wifi接入信息(请根据您的WiFi信息进行修改)
 const char* ssid = "";
 const char* password = "";
-// MQTT服务器地址
-const char* mqttServer = "192.168.1.3";
-// Topic前缀
-const char* mqttPubPrefix = "esp32-Pub-";
-const char* mqttSubPrefix = "esp32-Sub-";
-// clientId前缀
-const char* mqttClientIdPrefix = "esp32";
-// 日志Topic
-char* logTopicName = "ws2812log";
 
-// mqttServer 为MQTT服务器地址。
-// 可以使用公用MQTT服务器，也可以使用自建的局域网MQTT服务器或者自建的公网MQTT服务器
-// 关于搭建MQTT服务器的内容，敬请期待。
-// 公用MQTT服务器列表如下：
-// http://www.taichi-maker.com/public-mqtt-broker/
- 
-Ticker ticker;
 WiFiClient wifiClient;
-PubSubClient mqttClient(wifiClient);
- 
-int count;    // Ticker计数用变量
 
 void setup() {
   pinMode(LED_BUILTIN, OUTPUT);     // 设置板上LED引脚为输出模式
@@ -199,23 +178,13 @@ void setup() {
   // 连接WiFi
   connectWifi();
   
-  // 设置MQTT服务器和端口号
-  mqttClient.setServer(mqttServer, 1883);
- 
-  // 连接MQTT服务器
-  connectMQTTServer();
-
-  // 设置MQTT订阅回调函数
-  mqttClient.setCallback(receiveCallback);
-
   server.on("/", HTTP_GET, []() {
     server.sendHeader("Connection", "close");
     server.send(200, "text/html", mqttIndex);
   });
+  server.on(UriRegex("^\\/cmd\\/([a-z]+)\\/arg\\/([0-9]+)$"), handleControl);
   server.begin();
- 
-  // Ticker定时对象
-  //  ticker.attach(1, tickerCount);  
+
   delay(1000);                                                // 稳定性等待 
   
   LEDS.setBrightness(max_bright);                                                 // 亮度控制 
@@ -253,13 +222,6 @@ void setup() {
  
 void loop() { 
   server.handleClient();
-  
-  if (mqttClient.connected()) { // 如果开发板成功连接服务器    
-    // 保持心跳
-    mqttClient.loop();
-  } else {                  // 如果开发板未能成功连接服务器
-    connectMQTTServer();    // 则尝试连接服务器
-  }
 
   demo_check();                                                             // demo模式下检查变更动态模式时间 
 
@@ -283,53 +245,6 @@ void loop() {
   
   FastLED.show(); 
 }
- 
-void tickerCount(){
-  count++;
-}
- 
-void connectMQTTServer(){
-  // 根据ESP8266的MAC地址生成客户端ID（避免与其它ESP8266的客户端ID重名）
-  String clientId = mqttClientIdPrefix + WiFi.macAddress();
- 
-  // 连接MQTT服务器
-  if (mqttClient.connect(clientId.c_str())) { 
-    Serial.println("MQTT Server Connected.");
-    Serial.println("Server Address: ");
-    Serial.println(mqttServer);
-    Serial.println("ClientId:");
-    Serial.println(clientId);
-    subscribeTopic(); // 订阅多级主题
-  } else {
-    Serial.print("MQTT Server Connect Failed. Client State:");
-    Serial.println(mqttClient.state());
-    delay(3000);
-  }   
-}
- 
-// 发布信息
-void pubMQTTmsg(char* topic, String str){
-  // 建立发布主题。主题名称以esp32-Pub-为前缀，后面添加设备的MAC地址。
-  // 这么做是为确保不同用户进行MQTT信息发布时，ESP8266客户端名称各不相同，
-  String topicString = mqttPubPrefix + WiFi.macAddress() + '/' + topic;
-  char publishTopic[topicString.length() + 1];  
-  strcpy(publishTopic, topicString.c_str());
- 
-  // 建立发布信息
-
-  String messageString = str; 
-  char publishMsg[messageString.length() + 1];   
-  strcpy(publishMsg, messageString.c_str());
-  
-  // 实现ESP8266向主题发布信息
-  if(mqttClient.publish(publishTopic, publishMsg)){
-    Serial.println("Publish Topic:");Serial.println(publishTopic);
-    Serial.println("Publish message:");Serial.println(publishMsg);    
-  } else {
-    Serial.println("Message Publish Failed."); 
-  }
-}
-
 
 // 字节流转整形
 int byte2int(byte* bytes, unsigned int length)
@@ -345,50 +260,6 @@ int byte2int(byte* bytes, unsigned int length)
   }
   num /= 10;
   return num;
-}
- 
-
-// 收到信息后的回调函数
-void receiveCallback(char* topic, byte* payload, unsigned int length) {
-  // 通过串口打印出信息
-  Serial.print("Message Received [");
-  Serial.print(topic);
-  Serial.println("] ");
-  Serial.print("Message Length(Bytes) ");
-  Serial.println(length);
-  Serial.print("Message Content: ");
-  for (int i = 0; i < length; i++) {
-    Serial.print((char)payload[i]);
-  }
-  Serial.println("");
-
-  // 判断主题是否为控制请求
-  char *controlWs = "cmd";
-  char *ret;
-  ret = strstr(topic, controlWs);
-  if(strcmp(ret, controlWs) == 0) {
-    Serial.println("===============控制模式==================");
-    handleCommand(payload[0], byte2int(payload, length));
-  }
-}
-
-// 订阅多级主题
-void subscribeTopic(){
-
-  // 建立订阅主题。主题名称以esp32-Sub-为前缀，后面添加设备的MAC地址。
-  // 这么做是为确保不同设备使用同一个MQTT服务器测试消息订阅时，所订阅的主题名称不同
-  // # 多级通配符，简单来说就是订阅所有以esp32-Sub-macAddress开头的主题
-  String topicString = mqttSubPrefix + WiFi.macAddress() + "/#";
-  char subTopic[topicString.length() + 1];  
-  strcpy(subTopic, topicString.c_str());
-  
-  // 通过串口监视器输出是否成功订阅主题以及订阅的主题名称
-  if(mqttClient.subscribe(subTopic)){
-    Serial.println("Subscrib Topic:");
-    Serial.println(subTopic);
-  } else {
-    Serial.print("Subscribe Fail...");
-  }  
 }
  
 // ESP8266连接wifi
@@ -482,7 +353,7 @@ void demo_check(){
 }
 
 // 解析cmd数据 
-void handleCommand(byte inbyte, int inputNum) {
+String handleCommand(char inbyte, int inputNum) {
   String logCmdStr = "";
   if (inbyte != 10) {                                       
     Serial.print("# Received Command:  ");
@@ -583,23 +454,23 @@ void handleCommand(byte inbyte, int inputNum) {
       Serial.println(F(" * u    Set sequence duration (0-255)"));
       Serial.println(F(" * w    Write current mode to EEPROM"));
       logCmdStr =  " ---------- Command List ---------- \n";
-//      logCmdStr +=  " * Key  Description " + "\n";
-//      logCmdStr +=  " * a    Set all to one colour by hue (0-255) " + "\n";
-//      logCmdStr +=  " * b    Set brightness (0-255) " + "\n";
-//      logCmdStr +=  " * c    clear strip (set mode 0) " + "\n";
-//      logCmdStr +=  " * d    Set delay variable (0-255) " + "\n";
-//      logCmdStr +=  " * e    Set display mode previous/next. Previous = 0, Next = 1. " + "\n";
-//      logCmdStr +=  " * f    Set fixed palette mode (0 to 255) " + "\n";
-//      logCmdStr +=  " * g    Glitter toggle " + "\n";
-//      logCmdStr +=  " * i    Similar palette hue (0-255) " + "\n";
-//      logCmdStr +=  " * l    Set strip length & write EEPROM (0-255) " + "\n";
-//      logCmdStr +=  " * m    Set display mode  (0-255) " + "\n";
-//      logCmdStr +=  " * n    Direction toggle " + "\n";
-//      logCmdStr +=  " * p    Play mode ( 0-2 fix, seq, shuf) " + "\n";
-//      logCmdStr +=  " * q    Return version number " + "\n";
-//      logCmdStr +=  " * t    Select palette mode (0-3) " + "\n";
-//      logCmdStr +=  " * u    Set sequence duration (0-255) " + "\n";
-//      logCmdStr +=  " * w    Write current mode to EEPROM " + "\n";
+      logCmdStr +=  " * Key  Description \n";
+      logCmdStr +=  " * a    Set all to one colour by hue (0-255) \n";
+      logCmdStr +=  " * b    Set brightness (0-255) \n";
+      logCmdStr +=  " * c    clear strip (set mode 0) \n";
+      logCmdStr +=  " * d    Set delay variable (0-255) \n";
+      logCmdStr +=  " * e    Set display mode previous/next. Previous = 0, Next = 1. \n";
+      logCmdStr +=  " * f    Set fixed palette mode (0 to 255) \n";
+      logCmdStr +=  " * g    Glitter toggle \n";
+      logCmdStr +=  " * i    Similar palette hue (0-255) \n";
+      logCmdStr +=  " * l    Set strip length & write EEPROM (0-255) \n";
+      logCmdStr +=  " * m    Set display mode  (0-255) \n";
+      logCmdStr +=  " * n    Direction toggle \n";
+      logCmdStr +=  " * p    Play mode ( 0-2 fix, seq, shuf) \n";
+      logCmdStr +=  " * q    Return version number \n";
+      logCmdStr +=  " * t    Select palette mode (0-3) \n";
+      logCmdStr +=  " * u    Set sequence duration (0-255) \n";
+      logCmdStr +=  " * w    Write current mode to EEPROM \n";
       break;     
          
     case 105:                                               // "i" - 将色盘色彩设置为靠近色调数值的颜色
@@ -673,12 +544,24 @@ void handleCommand(byte inbyte, int inputNum) {
       Serial.print(F("Glitter Setting:")); Serial.println(glitter);    
       Serial.print(F("Brightness:")); Serial.println(max_bright);  
       logCmdStr =  "--- Report System Status ---\n";
-//      logCmdStr +=  "LED Number:" + String(NUM_LEDS) + "\n";
-//      logCmdStr +=  "LED Mode No:" + String(ledMode) + "\n";
-//      logCmdStr +=  "Work Mode:" + String(demorun) + "\n";
-//      logCmdStr +=  "Demo Time:" + String(demotime) + "\n";
-//      logCmdStr +=  "Glitter Setting:" + String(glitter) + "\n";
-//      logCmdStr +=  "Brightness:" + String(max_bright) + "\n";
+      logCmdStr +=  "LED Number:";
+      logCmdStr += String(NUM_LEDS);
+      logCmdStr += "\n";
+      logCmdStr +=  "LED Mode No:";
+      logCmdStr += String(ledMode);
+      logCmdStr += "\n";
+      logCmdStr +=  "Work Mode:";
+      logCmdStr += String(demorun);
+      logCmdStr += "\n";
+      logCmdStr +=  "Demo Time:";
+      logCmdStr += String(demotime);
+      logCmdStr += "\n";
+      logCmdStr +=  "Glitter Setting:";
+      logCmdStr += String(glitter);
+      logCmdStr += "\n";
+      logCmdStr +=  "Brightness:";
+      logCmdStr += String(max_bright);
+      logCmdStr += "\n";
       break;
       
     case 116:                                               // "t" - 设置色盘模式
@@ -719,6 +602,23 @@ void handleCommand(byte inbyte, int inputNum) {
       Serial.println(F("# Unknown Command. Type h for command list."));   
       logCmdStr = "# Unknown Command. Type h for command list.";     
   }
-  // 发送log到指定的Topic
-  pubMQTTmsg(logTopicName, logCmdStr);
+  
+  return logCmdStr;
 } 
+
+void handleControl() {
+   
+  String cmdStr = server.pathArg(0);
+  String argStr = server.pathArg(1);
+
+  char cmdTemp[2]; 
+  strcpy(cmdTemp, cmdStr.c_str());
+  int number = atoi(argStr.c_str());
+  Serial.println("");
+  Serial.println(cmdStr);
+  Serial.println(argStr);
+  Serial.println("");
+  String logStr = handleCommand(cmdTemp[0], number);
+  
+  server.send(200, "text/plain", logStr);
+}
