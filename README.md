@@ -1,8 +1,8 @@
-# esp8266/32 炫彩LED氛围灯
+# esp8266/32 炫彩LED氛围灯（Http版本）
 
 - 作者：pengqiangsheng
 - 说明：基于太极创客智能LED改进而来，适应 esp8266/32 系列。
-- 技术栈：MQTT + FastLed
+- 技术栈：Http + FastLed
 - 硬件需要：esp8266/esp32开发板 + ws2812灯带 + 5v开关电源
 - 注意事项：供电一定要足够, 灯带需要单独供电。电量计算：一颗灯珠0.3w，30颗灯珠需要 30 * 0.3w = 9w，因此带动30颗灯珠的灯带需要一个5v 2A的开关电源。
 - 推荐网站：太极创客 http://www.taichi-maker.com/
@@ -10,21 +10,25 @@
 
 # 介绍
 
- - esp8266/32智能LED是一款可用APP/PC/Web页面等多种方式通过MQTT协议进行无线控制的智能光带。
+ - esp8266/32智能LED（Http版本）是一款可用APP/PC/Web页面等多种方式通过Http协议进行无线控制的智能光带。
  - 光带的颜色，亮度，开关，动态色彩，工作模式调整等均可以使用手机应用通过WIFI进行无线遥控。
  - 光带配有多种工作模式，可以静态单色点亮您所喜爱的色彩，也可以通过动态彩色的模式为您的生活增添欢乐气氛！
 
 # 初次使用必看
 
-本项目烧写到esp32/8266后需要搭配mqtt使用：
+本项目烧写到esp32/8266后直接访问获取到的ip即可：
 
-![1](https://cdn.jsdelivr.net/gh/pengqiangsheng/esp8266_DazzleLed_ws2812/img/1.png)
-![2](https://cdn.jsdelivr.net/gh/pengqiangsheng/esp8266_DazzleLed_ws2812/img/2.png)
-![3](https://cdn.jsdelivr.net/gh/pengqiangsheng/esp8266_DazzleLed_ws2812/img/3.png)
-![4](https://cdn.jsdelivr.net/gh/pengqiangsheng/esp8266_DazzleLed_ws2812/img/4.png)
-![5](https://cdn.jsdelivr.net/gh/pengqiangsheng/esp8266_DazzleLed_ws2812/img/5.png)
+## 主界面
 
-> 关于mqtt web客户端的内容，请移步[esp8266网站快速开发脚手架](https://github.com/pengqiangsheng/esp8266_web_generator)
+![6](https://cdn.jsdelivr.net/gh/pengqiangsheng/esp8266_DazzleLed_ws2812/img/6.png)
+![7](https://cdn.jsdelivr.net/gh/pengqiangsheng/esp8266_DazzleLed_ws2812/img/7.png)
+
+## 对灯带进行操作
+
+> 移动端日志点击右下角的`vconsole`; PC端直接按F12
+
+![8](https://cdn.jsdelivr.net/gh/pengqiangsheng/esp8266_DazzleLed_ws2812/img/8.png)
+![9](https://cdn.jsdelivr.net/gh/pengqiangsheng/esp8266_DazzleLed_ws2812/img/9.png)
 
 # 指令说明：
 |字符|  说明                               |参数范围 |                说明                                |

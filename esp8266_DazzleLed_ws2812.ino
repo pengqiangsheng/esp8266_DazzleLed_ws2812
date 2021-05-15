@@ -151,7 +151,7 @@ uint8_t currentPatternIndex = 0;                                // 当前 patter
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <WebServer.h>
-#include "mqtt_web_client.h"
+#include "http_web_client.h"
 #include <uri/UriRegex.h>
 // 定义板载Led灯的GPIO引脚
 #ifndef LED_BUILTIN
@@ -180,7 +180,7 @@ void setup() {
   
   server.on("/", HTTP_GET, []() {
     server.sendHeader("Connection", "close");
-    server.send(200, "text/html", mqttIndex);
+    server.send(200, "text/html", controlIndex);
   });
   server.on(UriRegex("^\\/cmd\\/([a-z]+)\\/arg\\/([0-9]+)$"), handleControl);
   server.begin();
