@@ -2,7 +2,7 @@
 
 - 作者：pengqiangsheng
 - 说明：基于太极创客智能LED改进而来，适应 esp8266/32 系列。
-- 技术栈：MQTT + FastLed
+- 技术栈：MQTT/HTTP + FastLed + WebApp
 - 硬件需要：esp8266/esp32开发板 + ws2812灯带 + 5v开关电源
 - 注意事项：供电一定要足够, 灯带需要单独供电。电量计算：一颗灯珠0.3w，30颗灯珠需要 30 * 0.3w = 9w，因此带动30颗灯珠的灯带需要一个5v 2A的开关电源。
 - 推荐网站：太极创客 http://www.taichi-maker.com/
@@ -18,13 +18,53 @@
 
 # 介绍
 
- - esp8266/32智能LED是一款可用APP/PC/Web页面等多种方式通过MQTT协议进行无线控制的智能光带。
+ - esp8266/32智能LED是一款可用APP/PC/Web页面等多种方式通过MQTT/HTTP协议进行无线控制的智能光带。
  - 光带的颜色，亮度，开关，动态色彩，工作模式调整等均可以使用手机应用通过WIFI进行无线遥控。
  - 光带配有多种工作模式，可以静态单色点亮您所喜爱的色彩，也可以通过动态彩色的模式为您的生活增添欢乐气氛！
 
 # 初次使用必看
 
-本项目烧写到esp32/8266后需要搭配mqtt使用：
+## 2.1 基于http协议的控制界面
+
+> 克隆`httpControl`分支或者直接下载`Tag1.0.1`, 修改wifi信息直接烧写到设备
+
+在浏览输入串口中打印的`ip地址`
+
+![1](https://cdn.jsdelivr.net/gh/pengqiangsheng/esp8266_DazzleLed_ws2812/img/6.png)
+![2](https://cdn.jsdelivr.net/gh/pengqiangsheng/esp8266_DazzleLed_ws2812/img/7.png)
+![3](https://cdn.jsdelivr.net/gh/pengqiangsheng/esp8266_DazzleLed_ws2812/img/8.png)
+![4](https://cdn.jsdelivr.net/gh/pengqiangsheng/esp8266_DazzleLed_ws2812/img/9.png)
+
+
+## 2.2 基于mqtt协议的控制界面
+
+`main`分支克隆后需要做三件事：
+- 1.修改wifi信息
+- 2.修改mqtt相关配置
+
+在`esp8266_DazzleLed_ws2812.ino`文件163行开始：
+```c++
+// 设置wifi接入信息(请根据您的WiFi信息进行修改)
+const char* ssid = "";
+const char* password = "";
+// MQTT服务器地址
+const char* mqttServer = "192.168.1.3";
+// Topic前缀
+const char* mqttPubPrefix = "esp32-Pub-";
+const char* mqttSubPrefix = "esp32-Sub-";
+// clientId前缀
+const char* mqttClientIdPrefix = "esp32";
+// 日志Topic
+char* logTopicName = "ws2812log";
+
+// mqttServer 为MQTT服务器地址。
+// 可以使用公用MQTT服务器，也可以使用自建的局域网MQTT服务器或者自建的公网MQTT服务器
+// 关于搭建MQTT服务器的内容，敬请期待。
+// 公用MQTT服务器列表如下：
+// http://www.taichi-maker.com/public-mqtt-broker/
+```
+
+改好烧写到esp32/8266后需要搭配mqtt使用：
 
 ![1](https://cdn.jsdelivr.net/gh/pengqiangsheng/esp8266_DazzleLed_ws2812/img/1.png)
 ![2](https://cdn.jsdelivr.net/gh/pengqiangsheng/esp8266_DazzleLed_ws2812/img/2.png)
