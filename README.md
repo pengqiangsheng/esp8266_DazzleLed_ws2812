@@ -8,6 +8,14 @@
 - 推荐网站：太极创客 http://www.taichi-maker.com/
 - 创建时间：05/10/2021
 
+# 版本说明
+
+- `main`分支存放的是基于mqtt的控制界面
+- `httpControl`分支存放的是基于http的控制界面
+
+推荐第一次使用下载`httpControl`分支，Tag界面[Tag1.0.1](https://github.com/pengqiangsheng/esp8266_DazzleLed_ws2812/releases/tag/1.0.1)，直接下载链接[点我下载](https://github.com/pengqiangsheng/esp8266_DazzleLed_ws2812/archive/refs/tags/1.0.1.zip)
+
+
 # 介绍
 
  - esp8266/32智能LED是一款可用APP/PC/Web页面等多种方式通过MQTT协议进行无线控制的智能光带。
