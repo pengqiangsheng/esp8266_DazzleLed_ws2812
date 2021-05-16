@@ -173,9 +173,9 @@ void setup() {
   EEPROM.begin(5);
   
   // 连接WiFi
-//  connectWifi();
+  connectWifi();
   // 智能配网
-  smartConfigWifi();
+  // smartConfigWifi();
   
   server.on("/", HTTP_GET, []() {
     server.sendHeader("Connection", "close");
