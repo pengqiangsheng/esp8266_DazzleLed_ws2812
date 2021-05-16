@@ -153,6 +153,7 @@ uint8_t currentPatternIndex = 0;                                // 当前 patter
 #include <WebServer.h>
 #include "http_web_client.h"
 #include <uri/UriRegex.h>
+
 // 定义板载Led灯的GPIO引脚
 #ifndef LED_BUILTIN
 #define LED_BUILTIN 2
@@ -162,7 +163,6 @@ uint8_t currentPatternIndex = 0;                                // 当前 patter
 const char* ssid = "";
 const char* password = "";
 
-WiFiClient wifiClient;
 
 void setup() {
   pinMode(LED_BUILTIN, OUTPUT);     // 设置板上LED引脚为输出模式
