@@ -500,6 +500,7 @@ String handleCommand(char inbyte, int inputNum) {
       ledMode = constrain(ledMode,0,maxMode);
       Serial.println(ledMode);
       strobe_mode(ledMode, 1);
+      logCmdStr = "# Set Mode to " + String(ledMode);
       break;
 
     case 110:                                               // "n"  - 设置光亮方向

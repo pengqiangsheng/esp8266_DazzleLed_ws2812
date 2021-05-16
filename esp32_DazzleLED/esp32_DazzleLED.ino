@@ -172,11 +172,10 @@ void setup() {
   // 申请操作5个字节数据
   EEPROM.begin(5);
   
-  //设置ESP8266工作模式为无线终端模式
-  WiFi.mode(WIFI_STA);
-  
   // 连接WiFi
-  connectWifi();
+//  connectWifi();
+  // 智能配网
+  smartConfigWifi();
   
   server.on("/", HTTP_GET, []() {
     server.sendHeader("Connection", "close");
@@ -264,7 +263,9 @@ int byte2int(byte* bytes, unsigned int length)
  
 // ESP8266连接wifi
 void connectWifi(){
- 
+  //设置ESP8266工作模式为无线终端模式
+  WiFi.mode(WIFI_STA);
+  
   WiFi.begin(ssid, password);
  
   //等待WiFi连接,成功连接后输出成功信息
@@ -279,6 +280,34 @@ void connectWifi(){
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
 
+}
+
+void smartConfigWifi() {
+  //Init WiFi as Station, start SmartConfig
+  WiFi.mode(WIFI_AP_STA);
+  WiFi.beginSmartConfig();
+
+  //Wait for SmartConfig packet from mobile
+  Serial.println("Waiting for SmartConfig.");
+  while (!WiFi.smartConfigDone()) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println("");
+  Serial.println("SmartConfig received.");
+
+  //Wait for WiFi to connect to AP
+  Serial.println("Waiting for WiFi");
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println("WiFi Connected.");
+
+  Serial.print("IP Address: ");
+  Serial.println(WiFi.localIP());
 }
 
 
@@ -501,6 +530,7 @@ String handleCommand(char inbyte, int inputNum) {
       ledMode = constrain(ledMode,0,maxMode);
       Serial.println(ledMode);
       strobe_mode(ledMode, 1);
+      logCmdStr = "# Set Mode to " + String(ledMode);
       break;
 
     case 110:                                               // "n"  - 设置光亮方向
