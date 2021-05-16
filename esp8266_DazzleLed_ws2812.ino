@@ -51,6 +51,9 @@
  */
 #include "FastLED.h"                                          
 #include "EEPROM.h"                                        
+#ifndef BOARDVERSION
+#define BOARDVERSION 8266 // 定义板子的系列 32/8266
+#endif
 
 // fastled 版本要求
 #if FASTLED_VERSION < 3001000
@@ -68,7 +71,12 @@ byte inbyte;                                 // 当前模式
 int thisarg;                                 // 当前指令             
 
 // 定义ws2812配置
-#define LED_DT 23                            // 控制引脚                                          
+#if BOARDVERSION == 32
+#define LED_DT 23                            // 控制引脚
+#else
+#define LED_DT 2
+#endif
+
 #define COLOR_ORDER GRB                      // 以GRB排列               
 #define LED_TYPE WS2812                      // 灯条类型（具体支持的类型请查看FastLed库源码）              
 #define MAX_LEDS 100                         // 灯珠数量上限                
@@ -148,9 +156,15 @@ uint8_t currentPatternIndex = 0;                                // 当前 patter
 #include "three_sin_pal.h"
 #include "two_sin.h"
 
+#if BOARDVERSION == 32
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <WebServer.h>
+#else
+#include <ESP8266WiFi.h>
+#include <WiFiClient.h>
+#include <ESP8266WebServer.h>
+#endif
 #include <PubSubClient.h>
 #include <Ticker.h>
 #include "mqtt_web_client.h"
@@ -180,6 +194,13 @@ char* logTopicName = "ws2812log";
 // http://www.taichi-maker.com/public-mqtt-broker/
  
 Ticker ticker;
+
+#if BOARDVERSION == 32
+WebServer server(80);
+#else
+ESP8266WebServer server(80);
+#endif
+
 WiFiClient wifiClient;
 PubSubClient mqttClient(wifiClient);
  

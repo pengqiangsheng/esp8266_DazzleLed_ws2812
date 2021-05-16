@@ -13,8 +13,11 @@
 - `main`分支存放的是基于mqtt的控制界面
 - `httpControl`分支存放的是基于http的控制界面
 
-推荐第一次使用下载`httpControl`分支，Tag界面[Tag1.0.1](https://github.com/pengqiangsheng/esp8266_DazzleLed_ws2812/releases/tag/1.0.1)，直接下载链接[点我下载](https://github.com/pengqiangsheng/esp8266_DazzleLed_ws2812/archive/refs/tags/1.0.1.zip)
+推荐第一次使用下载`httpControl`分支，Tag界面[Tag1.0.2](https://github.com/pengqiangsheng/esp8266_DazzleLed_ws2812/releases/tag/1.0.2)，直接下载链接[点我下载](https://github.com/pengqiangsheng/esp8266_DazzleLed_ws2812/archive/refs/tags/1.0.2.zip)
 
+# 固件包
+
+目前只有esp32的智能配网固件，下载地址：[esp32_DazzleLED.ino.esp32.bin](https://github.com/pengqiangsheng/esp8266_DazzleLed_ws2812/releases/download/1.0.2/esp32_DazzleLED.ino.esp32.bin)
 
 # 介绍
 
@@ -26,7 +29,7 @@
 
 ## 2.1 基于http协议的控制界面
 
-> 克隆`httpControl`分支或者直接下载`Tag1.0.1`, 修改wifi信息直接烧写到设备
+> 克隆`httpControl`分支或者直接下载`Tag1.0.2`, 修改wifi信息直接烧写到设备
 
 在浏览输入串口中打印的`ip地址`
 
@@ -39,8 +42,19 @@
 ## 2.2 基于mqtt协议的控制界面
 
 `main`分支克隆后需要做三件事：
-- 1.修改wifi信息
-- 2.修改mqtt相关配置
+- 1.定义板子系列（32/8266）
+- 2.修改wifi信息和mqtt相关配置
+- 3.在arduino IDE中安装`PubSubClient`库
+
+在`esp8266_DazzleLed_ws2812.ino`文件54行先定义板子的系列：
+```c++
+#include "FastLED.h"                                          
+#include "EEPROM.h"                                        
+#ifndef BOARDVERSION
+#define BOARDVERSION 8266 // 定义板子的系列 32/8266
+#endif
+```
+
 
 在`esp8266_DazzleLed_ws2812.ino`文件163行开始：
 ```c++
