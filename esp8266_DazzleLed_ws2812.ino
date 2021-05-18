@@ -52,7 +52,7 @@
 #include "FastLED.h"                                          
 #include "EEPROM.h"                                        
 #ifndef BOARDVERSION
-#define BOARDVERSION 8266 // 定义板子的系列 32/8266
+#define BOARDVERSION 32 // 定义板子的系列 32/8266
 #endif
 
 // fastled 版本要求
@@ -175,10 +175,10 @@ uint8_t currentPatternIndex = 0;                                // 当前 patter
 #endif
 
 // 设置wifi接入信息(请根据您的WiFi信息进行修改)
-const char* ssid = "";
-const char* password = "";
+const char* ssid = "mi8-777";
+const char* password = "150909pqs";
 // MQTT服务器地址
-const char* mqttServer = "192.168.1.3";
+const char* mqttServer = "192.168.1.4";
 // Topic前缀
 const char* mqttPubPrefix = "esp32-Pub-";
 const char* mqttSubPrefix = "esp32-Sub-";
